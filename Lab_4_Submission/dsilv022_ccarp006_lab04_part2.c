@@ -43,14 +43,20 @@ void TickFct_IncToggle() {
 			INC_State = INC_s1Wait;
 			break;
 		case INC_s0Wait:
-			if (dec_button || inc_button) {
+			if(dec_button && inc_button){
+				INC_State = INC_reset;
+			}
+			else if (dec_button || inc_button) {
 				INC_State = INC_s0Wait;
 			} else {
 				INC_State = INC_wait;
 			}
 			break;
 		case INC_s1Wait:
-			if (dec_button || inc_button) {
+			if(dec_button && inc_button){
+				INC_State = INC_reset;
+			}
+			else if (dec_button || inc_button) {
 				INC_State = INC_s1Wait;
 			} else {
 				INC_State = INC_wait;
@@ -66,7 +72,7 @@ void TickFct_IncToggle() {
 	}
 	switch(INC_State) {
 		case INC_init:
-			PORTC = 0x07;
+			PORTC = 0x00;
 			break;
 		case INC_wait:
 			//do nothing and wait
