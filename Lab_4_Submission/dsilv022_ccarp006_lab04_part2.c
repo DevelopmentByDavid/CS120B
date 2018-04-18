@@ -13,8 +13,13 @@
 #include <avr/io.h>
 
 enum INC_States {INC_SMStart, INC_init, INC_wait, INC_s0, INC_s0Wait, INC_s1, INC_s1Wait, INC_reset} INC_State;
+unsigned char inc_button = 0;
+unsigned char dec_button = 0;
 
 void TickFct_IncToggle() {
+	inc_button = ~PINA & 0x01;
+	dec_button = ~PINA & 0x02;
+	
 	switch(INC_State) {
 		case INC_SMStart:
 			INC_State = INC_init;
@@ -23,11 +28,11 @@ void TickFct_IncToggle() {
 			INC_State = INC_wait;
 			break;
 		case INC_wait:
-			if ((PINA & 0x03) == 0x02) {
+			if (inc_button && !dec_button) {
 				INC_State = INC_s0;
-			} else if ((PINA & 0x03) == 0x01) {
+			} else if (dec_button && !inc_button) {
 				INC_State = INC_s1;
-			} else if ((PINA & 0x03) == 0x00) {
+			} else if (dec_button && inc_button) {
 				INC_State = INC_reset;
 			}
 			break;
@@ -38,25 +43,25 @@ void TickFct_IncToggle() {
 			INC_State = INC_s1Wait;
 			break;
 		case INC_s0Wait:
-			if ((PINA & 0x03) != 0x03) {
+			if (dec_button || inc_button) {
 				INC_State = INC_s0Wait;
 			} else {
 				INC_State = INC_wait;
 			}
 			break;
 		case INC_s1Wait:
-			 if ((PINA & 0x03) != 0x03) {
-				 INC_State = INC_s1Wait;
-			 } else {
+			if (dec_button || inc_button) {
+				INC_State = INC_s1Wait;
+			} else {
 				INC_State = INC_wait;
-			 }
+			}
 			break;
 		case INC_reset:
-			 if ((PINA & 0x03) != 0x03) {
-				 INC_State = INC_reset;
-			 } else {
-				 INC_State = INC_wait;
-			 }
+			if (dec_button || inc_button) {
+				INC_State = INC_reset;
+			} else {
+				INC_State = INC_wait;
+			}
 			break;
 	}
 	switch(INC_State) {
@@ -64,7 +69,7 @@ void TickFct_IncToggle() {
 			PORTC = 0x07;
 			break;
 		case INC_wait:
-		//do nothing and wait
+			//do nothing and wait
 			break;
 		case INC_s0:
 			if (PORTC < 0x09)
@@ -87,6 +92,7 @@ void TickFct_IncToggle() {
 			//do nothing
 			break;
 	}
+	
 }
 
 int main(void)
