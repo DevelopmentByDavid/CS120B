@@ -1,9 +1,10 @@
-/*
- * Part1.cpp
- *
- * Created: 4/18/2018 4:43:39 PM
- * Author : Connor
- */ 
+/*    Connor Carpenter ccarp006@ucr.edu, David Silva dsilv022@ucr.edu
+ *    Lab Section: 024
+ *    Assignment: Lab 5  Exercise 2
+ *    
+ *    I acknowledge all content contained herein, excluding template or example
+ *    code, is my own original work.
+ */
 
 
 #include <avr/io.h>
@@ -84,16 +85,16 @@ void Tick(){
 	case LED3: state =  button ? WAIT : LED1;
 		break;
 	case WAIT: state = button ? WAIT : WAIT2;
-			break;
+		break;
 	case WAIT2: state = button ? LED1 : WAIT2;
-			break;
+		break;
 	default: state = START;
 		break;
 	}
 	
 	switch (state)
 	{
-		case START:
+		case START:// do nothing
 			break;
 		case INIT: PORTB = 0x00;
 			break;
@@ -104,7 +105,7 @@ void Tick(){
 		case LED3:PORTB =  PORTB = 0x04;
 			break;
 		case WAIT: break;
-		default:
+		default: //do nothing
 			break;
 	}
 }
@@ -119,9 +120,9 @@ int main(void)
 	
     while (1) 
     {
-	Tick();
-	while (!TimerFlag){}
-		TimerFlag = 0;
+		Tick();
+		while (!TimerFlag){}
+			TimerFlag = 0;
 	
     }
 }

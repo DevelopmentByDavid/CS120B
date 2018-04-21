@@ -1,9 +1,10 @@
-/*
- * Part1.cpp
- *
- * Created: 4/18/2018 4:43:39 PM
- * Author : Connor
- */ 
+/*    Connor Carpenter ccarp006@ucr.edu, David Silva dsilv022@ucr.edu
+ *    Lab Section: 024
+ *    Assignment: Lab 5  Exercise 1
+ *    
+ *    I acknowledge all content contained herein, excluding template or example
+ *    code, is my own original work.
+ */
 
 
 #include <avr/io.h>
@@ -86,7 +87,7 @@ void Tick(){
 	
 	switch (state)
 	{
-		case START:
+		case START://do nothing
 			break;
 		case INIT: PORTB = 0x00;
 			break;

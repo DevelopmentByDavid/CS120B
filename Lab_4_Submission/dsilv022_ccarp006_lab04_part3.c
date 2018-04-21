@@ -1,3 +1,10 @@
+/*    Connor Carpenter ccarp006@ucr.edu, David Silva dsilv022@ucr.edu
+ *    Lab Section: 024
+ *    Assignment: Lab 4  Exercise 3
+ *    
+ *    I acknowledge all content contained herein, excluding template or example
+ *    code, is my own original work.
+ */
 #include <avr/io.h>
 
 enum SM_Christmas {SM_start, SM_wait,SM_invert, SM_button_wait} SM_var;
@@ -20,7 +27,7 @@ void tickFct() {
             SM_var = SM_button_wait;
             break;
 		case SM_button_wait: SM_var = !(PINA & 0x01) ? SM_button_wait : SM_wait;
-		break;
+			break;
     }
     switch (SM_var) {
         case SM_wait:
