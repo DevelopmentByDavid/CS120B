@@ -125,7 +125,7 @@ void TickFct_IncToggle() {
 					INC_State = INC_reset;
 				}
 				else{
-					INC_State = INC_s1;
+					INC_State = INC_s0;
 					++i;
 				}
 			}
@@ -175,6 +175,8 @@ void TickFct_IncToggle() {
 				INC_State = INC_wait;
 			}
 			break;
+			default: INC_State = INC_SMStart;
+				break;
 	}
 	switch(INC_State) {
 		case INC_init:
@@ -185,11 +187,11 @@ void TickFct_IncToggle() {
 			//do nothing and wait
 			break;
 		case INC_s0:
-			if (PORTC < 0x09 && i % 10 == 0)
+			if (PORTC < 0x09 && (i % 10 == 0 || i == 1))
 				PORTC += 1;
 			break;
 		case INC_s1:
-			if (PORTC > 0 && i % 10 == 0)
+			if (PORTC > 0 && (i % 10 == 0 || i == 1))
 				PORTC -= 1;
 			break;
 		case INC_reset:
