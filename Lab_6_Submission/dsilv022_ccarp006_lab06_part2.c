@@ -1,6 +1,6 @@
 /*    Connor Carpenter ccarp006@ucr.edu, David Silva dsilv022@ucr.edu
  *    Lab Section: 024
- *    Assignment: Lab 5  Exercise 2
+ *    Assignment: Lab 6  Exercise 2
  *    
  *    I acknowledge all content contained herein, excluding template or example
  *    code, is my own original work.
@@ -20,7 +20,8 @@ unsigned long _avr_timer_M = 1; // Start count from here, down to 0. Default 1 m
 unsigned long _avr_timer_cntcurr = 0; // Current internal count of 1ms ticks
 unsigned char button = 0;
 unsigned char score = 0;
-const unsigned char* msg = "YOU WIN!!!";
+unsigned char i = 0;
+const unsigned char* msg = "YOU WIN!!!", '\0';
 void TimerOn() {
 	// AVR timer/counter controller register TCCR1
 	TCCR1B = 0x0B;// bit3 = 0: CTC mode (clear timer on compare)
@@ -98,7 +99,7 @@ void Tick(){
 		break;
 	case DEC: state = WAIT;
 		break;
-	case VICTORY: state = START;
+	case VICTORY: state = i < 3 ? VICTORY :START;// stay in victory state for 3 transitions
 	default: state = START;
 		break;
 	}
@@ -108,7 +109,7 @@ void Tick(){
 		case START:// do nothing
 			break;
 		case INIT: PORTB = 0x00;
-			score = 0;
+			score = 5;
 			break;
 		case LED1: PORTB = 0x01;
 			break;
@@ -126,6 +127,7 @@ void Tick(){
 			break;
 		case VICTORY:   LCD_ClearScreen();
 						LCD_DisplayString(1, msg);
+						++i;
 			break;
 		default: //do nothing
 			break;
