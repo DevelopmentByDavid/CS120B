@@ -8,12 +8,15 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-enum INC_States {START, INIT, LED0, LED1, LED2, LED3, ON, OFF};
-INC_States state1 = START;
-INC_States state2 = START;
+enum INC_States {START, INIT, LED0, LED1, LED2, LED3, ON, OFF} state1 = START, state2 = START;
+
+//INC_States state1 = START;
+//INC_States state2 = START;
 unsigned char sequence = 0;
 unsigned char blink = 0;
 
+unsigned char i = 0;
+unsigned char j = 0;
 
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
 
@@ -105,7 +108,7 @@ void Tick_Sequence() {
 		default:
 			break;
 	}
-
+	++i;
 	
 }
 
@@ -143,22 +146,27 @@ void Tick_Blink() {
 }
 
 void Tick_Combine() {
-	PORTA = blink | sequence;	
+	PORTB = blink | sequence;	
 }
 
 int main(void)
 {
-	DDRA = 0xFF; PORTA = 0x00;
-	TimerSet(1000);
+	DDRB = 0xFF; PORTB = 0x00;
+	TimerSet(1);
 	TimerOn();
 	/* Replace with your application code */
 	while (1)
 	{
-		Tick_Sequence();
-		Tick_Blink();
-		Tick_Combine();
-		while (!TimerFlag){}
+		if (i == 1000){
+			Tick_Sequence();
+			Tick_Blink();
+			Tick_Combine();
+			i = 0;
 			
+		}
+		while (!TimerFlag){}
+		
+		++i;
 		TimerFlag = 0;
 	}
 }
