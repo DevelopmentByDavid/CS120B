@@ -1,6 +1,6 @@
 /*	Partner(s) Name & E-mail: David Silva (dsilv022@ucr.edu), Connor Carpenter (ccarp006@ucr.edu)
 *	Lab Section: 024
-*	Assignment: Lab 07  Exercise 02
+*	Assignment: Lab 07  Exercise 03
 *	I acknowledge all content contained herein, excluding template or example
 *	code, is my own original work.
 */
@@ -8,15 +8,16 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-enum INC_States {START, INIT, LED0, LED1, LED2, LED3, ON, OFF} state1 = START, state2 = START;
-enum SM {ST, combine} state3;
+enum INC_States {START, INIT, LED0, LED1, LED2, LED3, ON, OFF} state1 = START, state2 = START, state3 = START;
 
 //INC_States state1 = START;
 //INC_States state2 = START;
 unsigned char sequence = 0;
 unsigned char blink = 0;
+unsigned char buzz = 0;
 
-unsigned short i = 0;
+unsigned char buzz_switch = 0;
+
 
 
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
@@ -146,58 +147,76 @@ void Tick_Blink() {
 	
 }
 
+void Tick_Buzzer() {
+
+	switch (state3)
+	{
+		case START: state3 = INIT;
+			break;
+		case INIT: state3 = ON;
+			break;
+		case ON: state3 = OFF;
+			break;
+		case OFF: state3 = ON;
+			break;
+		default: state3 = START;
+			break;
+	}
+	
+	switch (state3)
+	{
+		case START:
+			break;
+		case INIT: buzz = 0;
+			break;
+		case ON: buzz = 0x10;
+			break;
+		case OFF: buzz = 0;
+			break;
+		default:
+			break;
+	}
+}
 void Tick_Combine() {
-				PORTB = 0x00;
-				PORTB = (blink | sequence);
+	PORTB = 0x00;
+	PORTB = (buzz | blink | sequence);
 	
 	
-	//switch (state3)
-	//{
-		//case ST: 
-			//state3 = combine;
-			//break;
-		//case combine:
-			//state3 = combine;
-			//break;
-		//default:
-			//state3 = START;
-	//}
-	//switch (state3) {
-		//case ST://do nothing
-		//break;
-		//case combine:
-			//
-			//PORTB = 0x00;
-			//PORTB = (blink | sequence);
-			//break;
-	//}
 }
 
 int main(void)
 {
 	unsigned char timerPeriod = 1;
+	DDRB = 0x00; PORTB = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
 	unsigned short sequenceElapsedTime = 0;
 	unsigned short blinkElapsedTime = 0;
+	unsigned short buzzElapsedTime = 0;
 	TimerSet(timerPeriod);
 	TimerOn();
 	/* Replace with your application code */
 	while (1)
 	{
+		buzz_switch = (~PINA) & 0x04;
 		
+		if (buzzElapsedTime >= 2 && buzz_switch){
+			Tick_Buzzer();
+			buzzElapsedTime = 0;
+		}
 		if(sequenceElapsedTime >= 300){
 			Tick_Sequence();
-			Tick_Combine();
 			sequenceElapsedTime = 0;			
 		}
 		if (blinkElapsedTime >= 1000){
 			Tick_Blink();
 			blinkElapsedTime = 0;
 		}
+		Tick_Combine();
 		while (!TimerFlag){}
 		
 		sequenceElapsedTime += timerPeriod;
 		blinkElapsedTime += timerPeriod;
+		buzzElapsedTime += timerPeriod;
 		TimerFlag = 0;
 	}
 }
