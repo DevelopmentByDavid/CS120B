@@ -177,6 +177,7 @@ int main(void)
 {
 	unsigned char timerPeriod = 1;
 	DDRB = 0xFF; PORTB = 0x00;
+	unsigned short sequenceElapsedTime = 0;
 	unsigned short blinkElapsedTime = 0;
 	TimerSet(timerPeriod);
 	TimerOn();
@@ -184,13 +185,18 @@ int main(void)
 	while (1)
 	{
 		
-		if (blinkElapsedTime >= 1000){
-			Tick_Blink();
+		if(sequenceElapsedTime >= 300){
 			Tick_Sequence();
 			Tick_Combine();
+			sequenceElapsedTime = 0;			
+		}
+		if (blinkElapsedTime >= 1000){
+			Tick_Blink();
 			blinkElapsedTime = 0;
 		}
 		while (!TimerFlag){}
+		
+		sequenceElapsedTime += timerPeriod;
 		blinkElapsedTime += timerPeriod;
 		TimerFlag = 0;
 	}
