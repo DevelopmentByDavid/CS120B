@@ -230,7 +230,7 @@ int main(void)
 	{
 		buzz_switch = (~PINA) & 0x04;
 		period_up = (~PINA) & 0x01;
-		period_up = (~PINA) & 0x02;
+		period_down = (~PINA) & 0x02;
 		
 		
 		if (buzzElapsedTime >= period && buzz_switch){
