@@ -8,7 +8,7 @@
 #include <avr/io.h>
 #include <math.h>
 
-#define MAX (pow(2,6))
+#define MAX (0x8F)
 #define step (MAX/8)
 
 void ADC_init() {
@@ -37,10 +37,7 @@ int main(void)
     /* Replace with your application code */
     while (1) 
     {
-		photo = ADC;
-		tempB = (char) photo;
-		tempD = (char) (photo >> 8);
-		
+		photo = ADC;				
 		if(photo >0 && photo < step)
 			PORTB = 0x01;
 		else if(photo >= step && photo < 2 * step)
@@ -55,8 +52,10 @@ int main(void)
 			PORTB = 0x3F;
 		else if(photo >= 6 * step && photo <  7 * step)
 			PORTB = 0x7F;
-		else if(photo >= 7 * step && photo < 8 * step)
+		else if(photo >= 7 * step )
 			PORTB = 0xFF;
+		else
+			PORTB = 0x00;
 	
     }
 }

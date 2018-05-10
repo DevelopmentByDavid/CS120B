@@ -6,8 +6,7 @@
 */
 
 #include <avr/io.h>
-#include <math.h>
-#define MAX (pow(2,6))
+#define MAX (0x8F)
 
 void ADC_init() {
 	ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
