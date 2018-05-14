@@ -5,7 +5,6 @@
 *	code, is my own original work.
 */
 
-
 #include <avr/io.h>
 
 enum SM_Stats {SM_Start, SM_wait, SM_C4, SM_D4, SM_E4} mySM;
@@ -51,15 +50,19 @@ void tickFct() {
 	switch (mySM) {
 		case SM_wait:
 			set_PWM(0);
+			PWM_off();
 			break;
 		case SM_C4:
 			set_PWM(261.63);
+			PWM_on();
 			break;
 		case SM_D4:
 			set_PWM(293.66);
+			PWM_on();
 			break;
 		case SM_E4:
 			set_PWM(329.63);
+			PWM_on();
 			break;
 		default:
 			mySM = SM_wait;
@@ -140,9 +143,12 @@ void PWM_off() {
 
 int main(void)
 {
+	DDRA = 0x00; PINA = 0xFF;
+	DDRB = 0x08; PINB = 0x00; //lab said DDRB = xxxx 1xxx
     /* Replace with your application code */
     while (1) 
     {
+		tickFct();
     }
 }
 
