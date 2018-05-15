@@ -12,7 +12,7 @@
 enum INC_States {INC_SMStart, INC_init, INC_wait, INC_s0, INC_s0Wait, INC_s1, INC_s1Wait, INC_reset} INC_State;
 unsigned char inc_button = 0;
 unsigned char dec_button = 0;
-
+unsigned char count = 0;
 
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
 
@@ -71,33 +71,7 @@ void TimerSet(unsigned long M) {
 }
 
 
-unsigned char Get_ASCII(unsigned char val){
-	unsigned char c = 0;
-	switch (val)
-	{
-		case 0: c = '0';
-			break;
-		case 1: c = '1';
-			break;
-		case 2: c = '2';
-			break;
-		case 3: c = '3';
-			break;
-		case 4: c = '4';
-			break;
-		case 5: c = '5';
-			break;
-		case 6: c = '6';
-			break;
-		case 7: c = '7';
-			break;
-		case 8: c = '8';
-			break;
-		case 9: c = '9';
-			break;
-	}
-	return c;
-}
+
 void TickFct_IncToggle() {
 	static unsigned char i = 0; //counter for holding inc or dec
 	inc_button = ~PINA & 0x01;
@@ -180,22 +154,22 @@ void TickFct_IncToggle() {
 	}
 	switch(INC_State) {
 		case INC_init:
-				PORTC = 0x00;
+				count = 0x00;
 				i = 0;
 			break;
 		case INC_wait:
 			//do nothing and wait
 			break;
 		case INC_s0:
-			if (PORTC < 0x09 && (i % 10 == 0 || i == 1))
-				PORTC += 1;
+			if (count < 0x09 && (i % 10 == 0 || i == 1) && i != 0)
+				count += 1;
 			break;
 		case INC_s1:
-			if (PORTC > 0 && (i % 10 == 0 || i == 1))
-				PORTC -= 1;
+			if (count > 0 && (i % 10 == 0 || i == 1) && i != 0)
+				count -= 1;
 			break;
 		case INC_reset:
-			PORTC = 0x00;
+			count = 0x00;
 			i = 0;
 			break;
 		case INC_s0Wait:
@@ -210,7 +184,7 @@ void TickFct_IncToggle() {
 	}
 	LCD_ClearScreen();
 	LCD_Cursor(1);
-	LCD_WriteData(PINC + '0');
+	LCD_WriteData(count + '0');
 	
 }
 
@@ -222,6 +196,7 @@ int main(void)
 	DDRD = 0xFF; PORTD = 0x00;
 	TimerSet(100);
 	TimerOn();
+	LCD_init ();
 	/* Replace with your application code */
 	while (1)
 	{

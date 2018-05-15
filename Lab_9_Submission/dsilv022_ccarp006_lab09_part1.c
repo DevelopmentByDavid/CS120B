@@ -8,37 +8,43 @@
 #include <avr/io.h>
 
 enum SM_Stats {SM_Start, SM_wait, SM_C4, SM_D4, SM_E4} mySM;
+unsigned char C4_button = 0;
+unsigned char D4_button = 0;
+unsigned char E4_button = 0;
 
 void tickFct() {
+	C4_button = (~PINA) & 0x01;
+	D4_button = (~PINA) & 0x02;
+	E4_button = (~PINA) & 0x04;
 	switch (mySM) {
 		case SM_Start:
 			mySM = SM_wait;
 			break;
 		case SM_wait:
-			if (PINA == 0x01) {
+			if (C4_button) {
 				mySM = SM_C4;
-			} else if (PINA == 0x02) {
+			} else if (D4_button) {
 				mySM = SM_D4;
-			} else if (PINA == 0x04) {
+			} else if (E4_button) {
 				mySM = SM_E4;
 			}
 			break;
 		case SM_C4:
-			if (PINA == 0x01) {
+			if (C4_button) {
 				mySM = SM_C4;
 			} else {
 				mySM = SM_wait;
 			}
 			break;
 		case SM_D4:
-			if (PINA == 0x02) {
+			if (D4_button) {
 				mySM = SM_D4;
 			} else {
 				mySM = SM_wait;
 			}
 			break;
 		case SM_E4:
-			if (PINA == 0x04) {
+			if (E4_button) {
 				mySM = SM_E4;
 			} else {
 				mySM = SM_wait;
@@ -53,16 +59,16 @@ void tickFct() {
 			PWM_off();
 			break;
 		case SM_C4:
-			set_PWM(261.63);
 			PWM_on();
+			set_PWM(261.63);
 			break;
 		case SM_D4:
-			set_PWM(293.66);
 			PWM_on();
+			set_PWM(293.66);
 			break;
 		case SM_E4:
-			set_PWM(329.63);
 			PWM_on();
+			set_PWM(329.63);
 			break;
 		default:
 			mySM = SM_wait;
@@ -144,11 +150,13 @@ void PWM_off() {
 int main(void)
 {
 	DDRA = 0x00; PINA = 0xFF;
-	DDRB = 0x08; PINB = 0x00; //lab said DDRB = xxxx 1xxx
+	DDRB = 0xFF; PINB = 0x00; //lab said DDRB = xxxx 1xxx
     /* Replace with your application code */
+				PWM_on();
+				set_PWM(261.63);
     while (1) 
     {
-		tickFct();
+		//tickFct();
     }
 }
 
