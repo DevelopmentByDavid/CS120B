@@ -97,14 +97,14 @@ void tickFct() {
 		mySM = SM_wait;
 		break;
 		case SM_wait:
-		if (C4_button) {
+		if (C4_button && !D4_button && !E4_button) {
 			mySM = SM_C4;
-			} else if (D4_button) {
+			} else if (D4_button &&!C4_button && !E4_button ) {
 			mySM = SM_D4;
-			} else if (E4_button) {
+			} else if (E4_button && !C4_button && !D4_button ) {
 			mySM = SM_E4;
 		}
-		//else set_PWM(261.63); //DO NOT LEAVE IN
+		else mySM = SM_wait;//set_PWM(261.63); //DO NOT LEAVE IN
 
 		break;
 		case SM_C4:
@@ -112,6 +112,7 @@ void tickFct() {
 			mySM = SM_C4;
 			} else {
 			mySM = SM_wait;
+					PWM_off();
 		}
 		break;
 		case SM_D4:
@@ -119,6 +120,7 @@ void tickFct() {
 			mySM = SM_D4;
 			} else {
 			mySM = SM_wait;
+					PWM_off();
 		}
 		break;
 		case SM_E4:
@@ -126,14 +128,16 @@ void tickFct() {
 			mySM = SM_E4;
 			} else {
 			mySM = SM_wait;
+					PWM_off();
 		}
 		break;
 		default:
 		mySM = SM_wait;
+		break;
 	}
 	switch (mySM) {
 		case SM_wait:
-		PWM_off();
+
 		break;
 		case SM_C4:
 		PWM_on();
@@ -147,8 +151,7 @@ void tickFct() {
 		PWM_on();
 		set_PWM(329.63);
 		break;
-		default:
-		mySM = SM_wait;
+
 	}
 }
 
@@ -159,12 +162,14 @@ void tickFct() {
 
 int main(void)
 {
-	DDRA = 0x00; PINA = 0xFF;
-	DDRB = 0xFF; PINB = 0x00; //lab said DDRB = xxxx 1xxx
+	DDRA = 0x00; PORTA = 0xFF;
+	DDRB = 0x08; PORTB = 0x00; //lab said DDRB = xxxx 1xxx
     /* Replace with your application code*/
+		PWM_on();
+		set_PWM(261.63);
     while (1) 
     {
-		tickFct();
+	//	tickFct();
     }
 }
 
