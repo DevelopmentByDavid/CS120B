@@ -1,9 +1,9 @@
-/*
- * dsilv022_ccarp006_lab10_part1.c
- *
- * Created: 5/14/2018 1:34:06 PM
- * Author : David
- */ 
+/*	Partner(s) Name & E-mail: David Silva (dsilv022@ucr.edu), Connor Carpenter (ccarp006@ucr.edu)
+*	Lab Section: 024
+*	Assignment: Lab 10  Exercise 01
+*	I acknowledge all content contained herein, excluding template or example
+*	code, is my own original work.
+*/
 
 #include <avr/io.h>
 #include <bit.h>
