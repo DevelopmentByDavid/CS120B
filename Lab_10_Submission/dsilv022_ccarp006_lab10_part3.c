@@ -35,9 +35,9 @@ int main(void)
 {
 	DDRA = 0xFF; PORTA = 0x00; 
 	DDRC = 0x00; PORTC = 0xFF; 
-	DDRD = 0xFF; PORTC = 0X0fF;
+	DDRD = 0xFF; PORTC = 0x00;
 	unsigned char  i = 0;
-	tasks[i].state = SM_start;
+	tasks[i].state = KPAD_start;
 	tasks[i].period = tasksPeriodKeyPad;
 	tasks[i].elapsedTime = 0;
 	tasks[i].TickFct = &TickFct_KeyPad;
@@ -104,32 +104,34 @@ int TickFct_KeyPad(int state) {
 	unsigned char key = GetKeypadKey();
  	switch (state) {
 		case KPAD_start:
-			state = SM_wait;
+			state = KPAD_wait;
 		break;
 		case KPAD_wait:
 		if (key == '\0') {
-			state = SM_wait;
+			state = KPAD_wait;
 		} else {
-			state = SM_display;
+			state = KPAD_display;
 		}
 		break;
 		case KPAD_display:
 		if (key == '\0') {
-			state = SM_wait;
+			state = KPAD_wait;
 		} else {
-			state = SM_display;
+			state = KPAD_waitRelease;
 		}
 		break;
-		case KPAD_waitRelease
+		case KPAD_waitRelease:
+			state = KPAD_wait;
+			break;
 		default:
-		state = SM_start;
+		state = KPAD_start;
 		break;
 	}
 	switch (state) {
-		case SM_wait:
+		case KPAD_wait:
 			//do nothing
 		break;
-		case  SM_display:
+		case  KPAD_display:
 			switch (key) {
 				case '1': cKey = "1"; break;
 				case '2': cKey = "2"; break;
