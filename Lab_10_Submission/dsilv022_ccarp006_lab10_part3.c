@@ -1,9 +1,9 @@
-/*	Partner(s) Name & E-mail: David Silva (dsilv022@ucr.edu), Connor Carpenter (ccarp006@ucr.edu)
-*	Lab Section: 024
-*	Assignment: Lab 10  Exercise 03
-*	I acknowledge all content contained herein, excluding template or example
-*	code, is my own original work.
-*/
+/*
+ * dsilv022_ccarp006_lab10_part1.c
+ *
+ * Created: 5/14/2018 1:34:06 PM
+ * Author : David
+ */ 
 
 #include <avr/io.h>
 #include <bit.h>
@@ -17,13 +17,14 @@
 task tasks[2];
 
 const unsigned char tasksNum = 2;
-const unsigned long tasksPeriodLCD = 100;
-const unsigned long tasksPeriodKeyPad = 100;
-const unsigned long tasksPeriodGCD = 100;
+const unsigned long tasksPeriodLCD = 1000;
+const unsigned long tasksPeriodKeyPad = 1000;
+const unsigned long tasksPeriodGCD = 1000;
 
-unsigned char cKey = 0;
+unsigned char cKey = 0; //current key displayed
+unsigned char pKey = 0; //current key pressed
 
-enum SM_Update {SM_start, SM_wait, SM_display} SM_updateVar;
+enum KPAD_States {KPAD_start, KPAD_wait,KPAD_display, KPAD_waitRelease} KPAD_State;
 int TickFct_KeyPad(int state);
 
 enum LCD_States {LCD_start, LCD_wait, LCD_display} LCD_state;
@@ -32,8 +33,9 @@ int TickFct_LCD(int state);
 
 int main(void)
 {
-	DDRB = 0xFF; PORTB = 0x00; // PORTB set to output, outputs init 0s
-	DDRC = 0xF0; PORTC = 0x0F; // PC7..4 outputs init 0s, PC3..0 inputs init 1s
+	DDRA = 0xFF; PORTA = 0x00; 
+	DDRC = 0x00; PORTC = 0xFF; 
+	DDRD = 0xFF; PORTC = 0X0fF;
 	unsigned char  i = 0;
 	tasks[i].state = SM_start;
 	tasks[i].period = tasksPeriodKeyPad;
@@ -51,16 +53,18 @@ int main(void)
 	LCD_Cursor(1);
 	while(1) {
 		while(!TimerFlag) {
-			unsigned char u;
-			for (u = 0; u < tasksNum; ++u) { // Heart of the scheduler code
-				if ( tasks[u].elapsedTime >= tasks[u].period ) { // Ready
-					tasks[u].state = tasks[u].TickFct(tasks[u].state);
-					tasks[u].elapsedTime = 0;
-				}
-				tasks[u].elapsedTime += tasksPeriodGCD;
-			}
-			tasks[u].state = tasks[u].TickFct(tasks[u].state);
+			
 		}
+		unsigned char u;
+		for (u = 0; u < tasksNum; ++u) { // Heart of the scheduler code
+			if ( tasks[u].elapsedTime >= tasks[u].period ) { // Ready
+				tasks[u].state = tasks[u].TickFct(tasks[u].state);
+				tasks[u].elapsedTime = 0;
+			}
+			tasks[u].elapsedTime += tasksPeriodGCD;
+		}
+		tasks[u].state = tasks[u].TickFct(tasks[u].state);
+		TimerFlag = 0;
 	}
 }
 
@@ -88,6 +92,7 @@ int TickFct_LCD(int state) {
 		break;
 		case LCD_display:
 			LCD_WriteData(cKey);
+			myKey = cKey;
 			break;
 	}
 	return state;
@@ -98,23 +103,24 @@ int TickFct_LCD(int state) {
 int TickFct_KeyPad(int state) {
 	unsigned char key = GetKeypadKey();
  	switch (state) {
-		case SM_start:
+		case KPAD_start:
 			state = SM_wait;
 		break;
-		case SM_wait:
+		case KPAD_wait:
 		if (key == '\0') {
 			state = SM_wait;
 		} else {
 			state = SM_display;
 		}
 		break;
-		case SM_display:
+		case KPAD_display:
 		if (key == '\0') {
 			state = SM_wait;
-			} else {
+		} else {
 			state = SM_display;
 		}
 		break;
+		case KPAD_waitRelease
 		default:
 		state = SM_start;
 		break;
