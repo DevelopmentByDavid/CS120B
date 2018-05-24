@@ -14,113 +14,112 @@
 #include <io.h>
 #include <io.c>
 
-task tasks[2];
+task tasks[1];
 
-const unsigned char tasksNum = 2;
-const unsigned long tasksPeriodLCD = 1000;
-const unsigned long tasksPeriodKeyPad = 1000;
-const unsigned long tasksPeriodGCD = 1000;
+const unsigned char tasksNum = 1;
+//const unsigned long tasksPeriodLCD = 100;
+const unsigned long tasksPeriodKeyPad = 100;
+const unsigned long tasksPeriodGCD = 100;
 
-unsigned char cKey = 0; //current key displayed
-unsigned char pKey = 0; //current key pressed
+unsigned char cKey; //current key displayed
 
-enum KPAD_States {KPAD_start, KPAD_wait,KPAD_display, KPAD_waitRelease} KPAD_State;
+enum KPAD_States {KPAD_start, KPAD_wait, KPAD_waitRelease, KPAD_set} KPAD_State;
 int TickFct_KeyPad(int state);
 
-enum LCD_States {LCD_start, LCD_wait, LCD_display} LCD_state;
-int TickFct_LCD(int state);
+//enum LCD_States {LCD_start, LCD_wait, LCD_display} LCD_state;
+//int TickFct_LCD(int state);
 
 
 int main(void)
 {
-	DDRA = 0xFF; PORTA = 0x00; 
-	DDRC = 0x00; PORTC = 0xFF; 
-	DDRD = 0xFF; PORTC = 0x00;
+	DDRA = 0xFF; PORTA = 0x00; //output
+	DDRC = 0xF0; PORTC = 0x0F; // PC7..4 outputs init 0s, PC3..0 inputs init 1s
+	DDRD = 0xFF; PORTC = 0x00; //output
 	unsigned char  i = 0;
 	tasks[i].state = KPAD_start;
 	tasks[i].period = tasksPeriodKeyPad;
 	tasks[i].elapsedTime = 0;
 	tasks[i].TickFct = &TickFct_KeyPad;
-	++i;
-	tasks[i].state = LCD_start;
-	tasks[i].period = tasksPeriodLCD;
-	tasks[i].elapsedTime = 0;
-	tasks[i].TickFct = &TickFct_LCD;
+	//++i;
+	//tasks[i].state = LCD_start;
+	//tasks[i].period = tasksPeriodLCD;
+	//tasks[i].elapsedTime = 0;
+	//tasks[i].TickFct = &TickFct_LCD;
 	
 	TimerSet(tasksPeriodGCD);
 	TimerOn();
 	LCD_init();
 	LCD_Cursor(1);
+	
+	unsigned char u;
 	while(1) {
-		while(!TimerFlag) {
-			
-		}
-		unsigned char u;
-		for (u = 0; u < tasksNum; ++u) { // Heart of the scheduler code
+		for (u = 0; u < tasksNum; u++) { // Heart of the scheduler code
 			if ( tasks[u].elapsedTime >= tasks[u].period ) { // Ready
 				tasks[u].state = tasks[u].TickFct(tasks[u].state);
 				tasks[u].elapsedTime = 0;
 			}
 			tasks[u].elapsedTime += tasksPeriodGCD;
 		}
-		tasks[u].state = tasks[u].TickFct(tasks[u].state);
+		while(!TimerFlag) {}
 		TimerFlag = 0;
 	}
 }
 
-int TickFct_LCD(int state) {
-	static unsigned char myKey;
-	switch (state) {
-		case LCD_start:
-			state = LCD_wait;
-			break;
-		case LCD_wait:
-			if (myKey == cKey) {
-				state = LCD_wait;
-			} else {
-				state = LCD_display;
-			}
-			break;
-		case LCD_display:
-			state = LCD_wait;
-		default:
-			state = LCD_start;
-	}
-	switch (state) {
-		case LCD_wait:
-		//do nothing
-		break;
-		case LCD_display:
-			LCD_WriteData(cKey);
-			myKey = cKey;
-			break;
-	}
-	return state;
-}
+//int TickFct_LCD(int state) {
+	//switch (state) {
+		//case LCD_start:
+			//state = LCD_wait;
+			//break;
+		//case LCD_wait:
+			//if (cKey) {
+				//state = LCD_display;
+			//} else {
+				//state = LCD_wait;
+			//}
+			//break;
+		//case LCD_display:
+			//state = LCD_wait;
+			//break;
+		//default:
+			//state = LCD_start;
+	//}
+	//switch (state) {
+		//case LCD_wait:
+			////do nothing
+			//break;
+		//case LCD_display:
+			////LCD_DisplayString(1,cKey);
+			////cKey = NULL;
+			//break;
+	//}
+	//return state;
+//}
 
 
 
 int TickFct_KeyPad(int state) {
 	unsigned char key = GetKeypadKey();
+	static unsigned char prevKey;
  	switch (state) {
 		case KPAD_start:
 			state = KPAD_wait;
 		break;
 		case KPAD_wait:
-		if (key == '\0') {
-			state = KPAD_wait;
-		} else {
-			state = KPAD_display;
-		}
-		break;
-		case KPAD_display:
-		if (key == '\0') {
+		if (key == '\0' || prevKey == key) {
 			state = KPAD_wait;
 		} else {
 			state = KPAD_waitRelease;
+			prevKey = key;
 		}
 		break;
 		case KPAD_waitRelease:
+			if (key == '\0') {
+				state = KPAD_set;
+			} else {
+				state = KPAD_waitRelease;
+			}
+			break;
+		case KPAD_set:
 			state = KPAD_wait;
 			break;
 		default:
@@ -131,24 +130,27 @@ int TickFct_KeyPad(int state) {
 		case KPAD_wait:
 			//do nothing
 		break;
-		case  KPAD_display:
-			switch (key) {
-				case '1': cKey = "1"; break;
-				case '2': cKey = "2"; break;
-				case '3': cKey = "3"; break;
-				case '4': cKey = "4"; break;
-				case '5': cKey = "5"; break;
-				case '6': cKey = "6"; break;
-				case '7': cKey = "7"; break;
-				case '8': cKey = "8"; break;
-				case '9': cKey = "9"; break;
-				case 'A': cKey = "A"; break;
-				case 'B': cKey = "B"; break;
-				case 'C': cKey = "C"; break;
-				case 'D': cKey = "D"; break;
-				case '*': cKey = "*"; break;
-				case '0': cKey = "0"; break;
-				case '#': cKey = "#"; break;
+		case KPAD_waitRelease:
+			//do nothing
+		break;
+		case KPAD_set:
+			switch (prevKey) {
+				case '1': LCD_DisplayString(1, "1"); break;
+				case '2': LCD_DisplayString(1, "2"); break;
+				case '3': LCD_DisplayString(1, "3"); break;
+				case '4': LCD_DisplayString(1, "4"); break;
+				case '5': LCD_DisplayString(1, "5"); break;
+				case '6': LCD_DisplayString(1, "6"); break;
+				case '7': LCD_DisplayString(1, "7"); break;
+				case '8': LCD_DisplayString(1, "8"); break;
+				case '9': LCD_DisplayString(1, "9"); break;
+				case 'A': LCD_DisplayString(1, "A"); break;
+				case 'B': LCD_DisplayString(1, "B"); break;
+				case 'C': LCD_DisplayString(1, "C"); break;
+				case 'D': LCD_DisplayString(1, "D"); break;
+				case '*': LCD_DisplayString(1, "*"); break;
+				case '0': LCD_DisplayString(1, "0"); break;
+				case '#': LCD_DisplayString(1, "#"); break;
 			}
 			break;
 	}
