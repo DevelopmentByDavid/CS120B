@@ -8,136 +8,14 @@
 
 #include <avr/io.h>
 
-enum SM_Stats {SM_Start, SM_C4, SM_D4, SM_E4, SM_F4, SM_G4, SM_A4, SM_B4, SM_C5} mySM;
+enum SM_Stats {SM_Start, SM_C4, SM_D4, SM_E4, SM_F4, SM_G4, SM_A4, SM_B4, SM_C5, INC, DEC} mySM;
 enum SM_Toggle {SM_wait, SM_toggle} SM_toggleSwitch;
 enum bool {false, true} myBool;
 unsigned char down_step = 0;
 unsigned char up_step = 0;
 unsigned char power = 0;
-void tickFct() {
-	down_step = (~PINA) & 0x02;
-	up_step = (~PINA) & 0x04;
-	switch (mySM) {
-		case SM_Start:
-			mySM = SM_C4;
-			break;
-		case SM_C4:
-			if (down_step) {
-				mySM = SM_C4;
-			} else if (up_step) {
-				mySM = SM_D4;
-			}
-			break;
-		case SM_D4:
-			if (down_step) {
-				mySM = SM_C4;
-			} else if (up_step) {
-				mySM = SM_E4;
-			}
-			break;
-		case SM_E4:
-			if (down_step) {
-				mySM = SM_D4;
-			} else if (up_step) {
-				mySM = SM_F4;
-			}
-			break;
-		case SM_F4:
-			if (down_step) {
-				mySM = SM_E4;
-			} else if (up_step) {
-				mySM = SM_G4;
-			}
-			break;
-		case SM_G4:
-			if (down_step) {
-				mySM = SM_F4;
-			} else if (up_step) {
-				mySM = SM_A4;
-			}
-			break;
-		case SM_A4:
-			if (down_step) {
-				mySM = SM_G4;
-			} else if (up_step) {
-				mySM = SM_B4;
-			}
-			break;
-		case SM_B4:
-			if (down_step) {
-				mySM = SM_A4;
-			} else if (up_step) {
-				mySM = SM_C5;
-			}
-			break;
-		case SM_C5:
-			if (down_step) {
-				mySM = SM_B4;
-			} else if (up_step) {
-				mySM = SM_C5;
-			}
-			break;
-		default:
-			mySM = SM_Start;
-	}
-	switch (mySM) {
-		case SM_C4:
-			set_PWM(261.63);
-			break;
-		case SM_D4:
-			set_PWM(293.66);
-			break;
-		case SM_E4:
-			set_PWM(329.63)
-			break;
-		case SM_F4:
-			set_PWM(349.23);
-			break;
-		case SM_G4:
-			set_PWM(392.00);
-			break;
-		case SM_A4:
-			set_PWM(440.00);
-			break;
-		case SM_B4:
-			set_PWM(493.88);
-			break;
-		case SM_C5:
-			set_PWM(523.25);
-			break;
-	}
-}
 
-tickFct_2() {
-	power = (~PINA) & 0x01;
-	switch (SM_toggleSwitch) {
-		case SM_wait: 
-			if (power) {
-				SM_toggleSwitch = SM_toggle;
-			}
-			break;
-		case SM_toggle:
-			SM_toggleSwitch = SM_wait;
-			break;
-		default:
-			SM_toggleSwitch = SM_wait;
-			break;
-	}
-	switch (SM_toggleSwitch) {
-		case SM_wait:
-			//do nothing
-			break;
-		case SM_toggle:
-			if (myBool) {
-				myBool = false;
-				PWM_off();
-			} else {
-				myBool = true;
-				PWM_on();
-			}
-			break;
-	}
-}
+unsigned char prev_state = 0;
 
 void set_PWM(double frequency) {
 
@@ -211,10 +89,160 @@ void PWM_off() {
 
 }
 
+
+
+
+
+
+void tickFct() {
+	down_step = (~PINA) & 0x02;
+	up_step = (~PINA) & 0x04;
+	switch (mySM) {
+		case SM_Start:
+			mySM = SM_C4;
+			break;
+		case INC: mySM = up_step ? INC : prev_state + 1;
+			break;
+		case DEC: mySM = down_step ? DEC : prev_state - 1;
+			break;
+		case SM_C4:
+			if (down_step) {
+				mySM = SM_C4;
+			} else if (up_step) {
+				prev_state = mySM;
+				mySM = INC;
+			}
+			break;
+		case SM_D4:
+			if (down_step) {
+				prev_state = mySM;
+				mySM = DEC;
+			} else if (up_step) {
+				prev_state = mySM;
+				mySM = INC;
+			}
+			break;
+		case SM_E4:
+			if (down_step) {
+				prev_state = mySM;
+				mySM = DEC;
+			} else if (up_step) {
+				prev_state = mySM;
+				mySM = INC;
+			}
+			break;
+		case SM_F4:
+			if (down_step) {
+				prev_state = mySM;
+				mySM = DEC;
+			} else if (up_step) {
+				prev_state = mySM;
+				mySM = INC;
+			}
+			break;
+		case SM_G4:
+			if (down_step) {
+				prev_state = mySM;
+				mySM = DEC;
+			} else if (up_step) {
+				prev_state = mySM;
+				mySM = INC;
+			}
+			break;
+		case SM_A4:
+			if (down_step) {
+				prev_state = mySM;
+				mySM = DEC;
+			} else if (up_step) {
+				prev_state = mySM;
+				mySM = INC;
+			}
+			break;
+		case SM_B4:
+			if (down_step) {
+				prev_state = mySM;
+				mySM = DEC;
+			} else if (up_step) {
+				prev_state = mySM;
+				mySM = INC;
+			}
+			break;
+		case SM_C5:
+			if (down_step) {
+				prev_state = mySM;
+				mySM = DEC;
+			} else if (up_step) {
+				mySM = SM_C5;
+			}
+			break;
+		default:
+			mySM = SM_Start;
+	}
+	switch (mySM) {
+		case SM_C4:
+			set_PWM(261.63);
+			break;
+		case SM_D4:
+			set_PWM(293.66);
+			break;
+		case SM_E4:
+			set_PWM(329.63);
+			break;
+		case SM_F4:
+			set_PWM(349.23);
+			break;
+		case SM_G4:
+			set_PWM(392.00);
+			break;
+		case SM_A4:
+			set_PWM(440.00);
+			break;
+		case SM_B4:
+			set_PWM(493.88);
+			break;
+		case SM_C5:
+			set_PWM(523.25);
+			break;
+	}
+}
+
+tickFct_2() {
+	power = (~PINA) & 0x01;
+	switch (SM_toggleSwitch) {
+		case SM_wait: 
+			if (power) {
+				SM_toggleSwitch = SM_toggle;
+			}
+			break;
+		case SM_toggle:
+			SM_toggleSwitch = power ? SM_toggleSwitch : SM_wait;
+			break;
+		default:
+			SM_toggleSwitch = SM_wait;
+			break;
+	}
+	switch (SM_toggleSwitch) {
+		case SM_wait:
+			//do nothing
+			break;
+		case SM_toggle:
+			if (myBool) {
+				myBool = false;
+				PWM_off();
+			} else {
+				myBool = true;
+				PWM_on();
+			}
+			break;
+	}
+}
+
+
+
 int main(void)
 {
 	DDRA = 0x00; PINA = 0xFF;
-	DDRB = 0x08; PINB = 0x00; //lab said DDRB = xxxx 1xxx
+	DDRB = 0xFF; PINB = 0x00; //lab said DDRB = xxxx 1xxx
 	/* Replace with your application code */
 	while (1)
 	{
